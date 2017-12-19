@@ -30,8 +30,8 @@ MODULES = \
 	mha/libmha \
 	mha/frameworks \
 	mha/plugins \
-        mha/mhatest \
 	external_libs \
+	mha/mhatest \
 
 DOCMODULES = \
 	mha/doc/flowcharts \
@@ -41,18 +41,30 @@ DOCMODULES = \
 
 all: $(MODULES)
 
-.PHONY : $(MODULES) $(DOCMODULES)
+.PHONY : $(MODULES) $(DOCMODULES) coverage
 
 $(MODULES:external_libs=) $(DOCMODULES):
 	$(MAKE) -C $@
 
 external_libs:
-	$(MAKE) -j 1 -C $@
+	$(MAKE) -C $@
 
 doc: mha/doc
 
 clean:
 	for m in $(MODULES) $(DOCMODULES); do $(MAKE) -C $$m clean; done
+
+install: all
+	@mkdir -p bin
+	@mkdir -p lib
+	@find ./external_libs/ ./mha/ -name *$(DYNAMIC_LIB_EXT) -exec cp {} lib/. \;
+	@cp mha/frameworks/$(BUILD_DIR)/mha bin/.
+	@cp mha/tools/mha.sh bin/.
+
+uninstall:
+	@rm -rf bin
+	@rm -rf lib
+
 
 # Inter-module dependencies. Required for parallel building (e.g. make -j 4)
 mha/libmha: external_libs
